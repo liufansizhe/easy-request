@@ -1,5 +1,5 @@
 {
-  "name": "easy-request",
+  "name": "lf-request",
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
@@ -8,9 +8,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "刘范思哲",
   "license": "ISC",
-  "description": "",
+  "description": "封装axios请求",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.2",
     "@rollup/plugin-json": "^6.1.0",
