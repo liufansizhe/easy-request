@@ -6,14 +6,11 @@ import config from "./config";
 import qs from "qs";
 
 export interface RequestListType {
-  name: string;
   url: string;
   type: "get" | "post" | "put" | "delete";
   headers?: object;
 }
 export interface EasyRequestProps {
-  request?: Array<(props: any) => any>;
-  response?: Array<(props: any) => any>;
   config?: CreateAxiosDefaults;
   requestList: RequestListType[];
 }
@@ -21,14 +18,10 @@ interface RequestListClassTypes extends RequestListType {
   fn?: (val?: any) => Promise<AxiosResponse<any, any>> | undefined;
 }
 class easyRequest {
-  private request;
-  private response;
   private config;
   private Axios: AxiosInstance | null;
   private requestList: RequestListClassTypes[];
   constructor(props: EasyRequestProps) {
-    this.request = props?.request;
-    this.response = props?.response;
     this.config = props?.config;
     this.Axios = null;
     this.requestList = props.requestList;
@@ -39,54 +32,18 @@ class easyRequest {
     this.Axios = axios.create(axiosConfig);
     this.Axios.interceptors.request.use(
       (config) => {
-        if (this.request?.[0]) {
-          return this.request?.[0](config);
-        }
-        if (config.headers["Content-Type"] == "multipart/form-data") {
-          return config;
-        }
-        if (config.method === "post") config.data = qs.stringify(config.data);
-        return config;
+        return this.interceptorsRequest(config, null);
       },
       (error) => {
-        if (this.request?.[1]) {
-          return this.request?.[1](error);
-        }
-        return Promise.reject(error);
+        return this.interceptorsRequest(null, error);
       }
     );
     this.Axios.interceptors.response.use(
       (response) => {
-        if (this.response?.[0]) {
-          return this.response?.[0](response);
-        }
-        switch (response.status) {
-          case 200: {
-            if (response?.data?.code < 0) {
-              return { ...response?.data, data: null };
-            } else {
-              return {
-                ...response.data,
-              };
-            }
-          }
-          default: {
-            return { ...response, data: null };
-          }
-        }
+        return this.interceptorsResponse(response, null);
       },
       (error) => {
-        if (this.response?.[1]) {
-          return this.response?.[1](error);
-        }
-        switch (error?.response?.status) {
-          case 401: {
-            return { data: null };
-          }
-          default: {
-            return { data: null };
-          }
-        }
+        return this.interceptorsResponse(null, error);
       }
     );
     this.requestList.map((item) => {
@@ -118,6 +75,44 @@ class easyRequest {
       };
     });
   }
+  interceptorsRequest(config: any, error: any) {
+    if (config) {
+      if (config.headers["Content-Type"] == "multipart/form-data") {
+        return config;
+      }
+      if (config.method === "post") config.data = qs.stringify(config.data);
+      return config;
+    } else if (error) {
+      return error;
+    }
+  }
+  interceptorsResponse(response: any, error: any) {
+    if (response) {
+      switch (response.status) {
+        case 200: {
+          if (response?.data?.code < 0) {
+            return { ...response?.data, data: null };
+          } else {
+            return {
+              ...response.data,
+            };
+          }
+        }
+        default: {
+          return { ...response, data: null };
+        }
+      }
+    } else if (error) {
+      switch (error?.response?.status) {
+        case 401: {
+          return { data: null };
+        }
+        default: {
+          return { data: null };
+        }
+      }
+    }
+  }
   getApi() {
     let apiList: {
       [key: string]: (
@@ -125,8 +120,12 @@ class easyRequest {
       ) => Promise<AxiosResponse<any, any>> | undefined;
     } = {};
     this.requestList.forEach((item) => {
+      const list = item?.url?.split("/");
+      const name =
+        list[list.length - 1].charAt(0).toUpperCase() +
+        list[list.length - 1].slice(1);
       if (item.fn) {
-        apiList[item.name] = item.fn;
+        apiList[name] = item.fn;
       }
     });
     return apiList;

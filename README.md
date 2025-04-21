@@ -8,8 +8,11 @@ name：后续发请求的函数名
 import easyRequest from "lf-request";
 
 const easyRequestInstance = new easyRequest({
-  requestList: [{ type: "post", url: "login", name: "Login" }],
+  requestList: [{ type: "post", url: "login",headers:{}}],
 });
-const apiList = easyRequestInstance.getApi();
-export const Login = apiList.Login;
+//请求前拦截
+easyRequestInstance.interceptorRequest=(config,error)=>{}
+//请求结果拦截
+easyRequestInstance.interceptorsResponse=(config,error)=>{}
+export default easyRequestInstance.getApi();
 ```
