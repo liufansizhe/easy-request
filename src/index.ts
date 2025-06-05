@@ -10,18 +10,18 @@ export interface RequestListType {
   type: "get" | "post" | "put" | "delete";
   headers?: object;
 }
-export interface EasyRequestProps {
+export interface LfRequestProps {
   config?: CreateAxiosDefaults;
   requestList: RequestListType[];
 }
 interface RequestListClassTypes extends RequestListType {
   fn?: (val?: any) => Promise<AxiosResponse<any, any>> | undefined;
 }
-class easyRequest {
+class lfRequest {
   private config;
   private Axios: AxiosInstance | null;
   private requestList: RequestListClassTypes[];
-  constructor(props: EasyRequestProps) {
+  constructor(props: LfRequestProps) {
     this.config = props?.config;
     this.Axios = null;
     this.requestList = props.requestList;
@@ -131,4 +131,4 @@ class easyRequest {
     return apiList;
   }
 }
-export default easyRequest;
+export default lfRequest;
